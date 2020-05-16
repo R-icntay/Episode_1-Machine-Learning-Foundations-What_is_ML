@@ -1,0 +1,269 @@
+---
+title: "R Notebook"
+output:
+  html_document:
+    df_print: paged
+    theme: sandstone
+    highlight: zenburn
+---
+
+
+
+## **The Hello World of Deep Learning with Neural Networks:** The R version
+
+Hello! This is the first code walkthrough of the session ***Machine Learning Foundations*** where the awesome [Laurence Moroney](https://www.linkedin.com/in/laurence-moroney),a Developer Advocate at Google working on Artificial Intelligence, takes you through the fundamentals of building machine learned models using TensorFlow.
+
+[Episode 1](https://www.youtube.com/watch?v=_Z9TRANg4c0&lc=UgyZovmGs5ZzU-9g2RN4AaABAg.98TaXjZj0VH98UAi73GE_g) talks about what machine learning actually is and how it works, including a simple hands-on example to get you started building ML models--the “Hello World” of machine learning! 
+
+The examples are in basic Python(which am also learning), but being the R enthusiast I am, this thought ***"Can this be done in R too?"*** was inevitable. So here are the code snippets of the Python Code in R.
+
+I highly recommend that you go through the YouTube session to understand the basics of Machine learning with TensorFlow. I will try and highlight some of the stuff Laurence Moroney said and add some of my own for the sake of completeness but I highly recommend you listen from him first. Also, some of the explanation is based directly on the [Python notebook](https://colab.research.google.com/github/lmoroney/mlday-tokyo/blob/master/Lab1-Hello-ML-World.ipynb#scrollTo=btF2CSFH2iEX) used for the Episode 1 session.
+
+
+### **What is Machine Learning?**
+
+
+
+***Traditional Programming***
+
+```{r,echo=FALSE}
+library(knitr)
+include_graphics("C:/Users/ADMIN/Desktop/Intoduction to Python for data science/R for data science/aRduino/r4g/tp1.png")
+
+```
+
+
+As shown above, Traditional Programming requires you to figure out the rules, express them in code and then have them act on data to give answers.
+
+***Machine Learning***
+
+
+As opposed to Traditional Programming where programmers try to figure out the rules, Machine Learning involves fitting in lots of answers and data and letting the machine figure out the rules.
+
+At its core, Machine Learning revolves around having lots of data, having labels for that data and then programming the computer to figure out the rules that distinguish the labels.(supervised ML)
+
+```{r,echo=FALSE}
+library(knitr)
+include_graphics("C:/Users/ADMIN/Desktop/Intoduction to Python for data science/R for data science/aRduino/r4g/ml1.png")
+
+```
+
+
+**Laurence Moroney then goes on to give a very good example of Activity Recognition in the Traditional Programming Vs Machine Learning perspective.**
+
+
+### ***Consider the relationship: y=3x+1 ***
+How would we implement this Mathematically? Consider the following function in R:
+
+```{r}
+y <- function(x){
+  y <- 3*x+1
+  print(y)
+}
+
+# let's take the function for a test run, shall we? Let x be 5, y should be 16 right?
+y(5)
+
+# Bingo!
+```
+
+The above examples shows how to create a function in R using:
+***function( arglist ) expr***
+***return(value)***
+The function takes in a value *x*, implements y=3x+1 and prints out the result.
+For more examples of creating functions in R, check out these neatly done tutorials at [RStudio primers](https://rstudio.cloud/learn/primers).
+
+
+So how would you train a neural network to do the equivalent task? Using data! By feeding it with a set of Xs, and a set of Ys, it should be able to figure out the relationship between them.
+
+This is obviously a very different paradigm than what you might be used to, so let's step through it piece by piece.
+
+
+## ***Getting started with the Neural Network***
+
+Let's start by loading the libraries required for this session.
+
+We'll be requiring the Tidyverse and Keras(a framework for defining a neural network as a set of Sequential layers). You can have them installed as follows
+
+```
+suppressMessages(install.packages("tidyverse"))
+suppressMessages(install.packages("keras"))
+suppressMessages(install_keras())
+
+Ps: it could take a while
+```
+Once installed, let's get rolling:
+
+```{r}
+suppressPackageStartupMessages({
+  library(tidyverse)
+  library(keras)
+})
+```
+
+
+**Defining the Neural Network**
+
+We will create the simplest possible neural network. It has 1 layer, and that layer has 1 neuron, and the input shape to it is just 1 value.
+
+```{r}
+model <- keras_model_sequential()
+
+# keras_model_sequential {keras}	creates a Keras Model composed of a linear stack of layers
+```
+
+Great, we now have a Keras Model. On to the next step
+
+
+**Adding layers to the NN**
+
+Our simple NN has just 1 layer and 1 neuron which takes in one input ***x*** (input_shape) and outputs one value ***y*** (units=1). This is defined using code as:
+
+```{r,echo=FALSE}
+library(knitr)
+include_graphics("C:/Users/ADMIN/Desktop/Intoduction to Python for data science/R for data science/aRduino/r4g/node1.png")
+
+```
+
+```{r}
+model %>% 
+  layer_dense(units = 1,input_shape = 1)
+
+# If you aren't familiar with %>% , it's known as the pipe operator. It takes in the data on the left 
+# and passes it on to the function on its right.
+# It can be read as 'then'.
+```
+
+
+***Compile:*** Configure a Keras model for training
+
+To make the network ready for training, we need to pick three more things, as part of the step: compilation
+
+* A loss function—How the network will be able to measure how good a job it’s doing on its training data, and thus how it will be able to steer itself in the right direction.
+
+
+* An optimizer—The mechanism through which the network will update itself based on the data it sees and its loss function.
+
+
+* Metrics to monitor during training and testing—Here we’ll only care about accuracy
+
+If you've seen lots of math for machine learning, here's where it's usually used, but in this case it's nicely encapsulated in functions for you. But what happens here -- let's explain...
+
+We know that in our function, the relationship between the numbers is y=3x+1.
+
+When the computer is trying to 'learn' that, it makes a guess...maybe y=10x+10. The LOSS function measures the guessed answers against the known correct answers and measures how well or how badly it did.
+
+It then uses the OPTIMIZER function to make another guess. Based on how the loss function went, it will try to minimize the loss. At that point maybe it will come up with somehting like y=5x+5, which, while still pretty bad, is closer to the correct result (i.e. the loss is lower)
+
+It will repeat this for the number of EPOCHS which you will see shortly. But first, here's how we tell it to use 'MEAN SQUARED ERROR' for the loss and 'STOCHASTIC GRADIENT DESCENT' for the optimizer. You don't need to understand the math for these yet, but you can see that they work! :)
+
+Over time you will learn the different and appropriate loss and optimizer functions for different scenarios.
+
+
+```{r}
+model %>% 
+  compile(loss="mean_squared_error",
+          optimizer= optimizer_sgd()
+          )
+```
+
+
+
+Hmmmmm. So what is the essential thing we are missing?? Hold that thought: **DATA**
+
+***Providing the Data***
+
+In this case we are taking 6 xs and 6ys.
+```{r}
+xs <- as.matrix(c(-1.0, 0.0, 1.0, 2.0, 3.0, 4.0))
+ys <- as.matrix(c(-2.0, 1.0, 4.0, 7.0, 10.0, 13.0))
+```
+
+
+
+***Training the Neural Network***
+
+This is the process of training the neural network, where it 'learns' the relationship between the Xs and Ys is. This is where it will go through the loop of making a guess, measuring how good or bad it is (aka the loss), using the opimizer to make another guess etc. It will do it for the number of epochs you specify.
+
+```{r}
+history <- model %>% 
+  fit(x = xs,
+      y = ys,
+      epochs = 500)
+
+plot(history)
+
+# From the plot, you can see that the loss(the difference between the predicted value and actual value),
+# starts at a very high value but by the end of the 500 epochs,
+# it decreases to a very small value.
+
+
+
+history
+```
+
+Ok, now we have a model that has been trained to learn the relationshop between X and Y, let's see how the model predicts something completely new and unclassified.
+
+So, for example, if X = 10, what do you think Y will be? Take a guess before you run this code:
+
+```{r}
+model %>% predict(10.0)
+
+
+```
+
+You might have thought 31, right? But it ended up being a little below or above(in my case 30.99912). Why do you think that is?
+
+Remember that neural networks deal with probabilities, so given the data that we fed the NN with, it calculated that there is a very high probability that the relationship between X and Y is Y=3X+1, but with only 6 data points we can't know for sure. As a result, the result for 10 is very close to 31, but not necessarily 31.
+
+As you work with neural networks, you'll see this pattern recurring. You will almost always deal with probabilities, not certainties.
+
+
+The exercise for the session can be found [here](https://colab.research.google.com/github/lmoroney/dlaicourse/blob/master/Exercises/Exercise%201%20-%20House%20Prices/Exercise_1_House_Prices_Question.ipynb#scrollTo=mw2VBrBcgvGa). 
+Just try it on your own before viewing the solution.
+
+```{r}
+# Load the required libraries
+library(keras)
+# library(tidyverse)
+
+# Define the model
+ model_sol <- keras_model_sequential()
+ 
+# Add layers
+ model_sol %>% layer_dense(units = 1, input_shape = 1)
+ 
+# Configure a Keras model for training
+ model_sol %>% 
+   compile(
+     loss = "mean_squared_error",
+     optimizer = optimizer_sgd()
+   )
+ 
+# Providing the data 
+ xs_sol = as.matrix(c(1.0, 2.0, 3.0, 4.0, 5.0, 6.0))
+ ys_sol = as.matrix(c(1.0, 1.5, 2.0, 2.5, 3.0, 3.5))
+ 
+
+# Training the neural network
+ history_sol = model_sol %>% fit(x = xs_sol, y=ys_sol, epochs=500)
+ history_sol
+ 
+# Supplying new data
+ 
+ model_sol %>% 
+   predict(7.0)
+ 
+ 
+# we should expect something close to 4
+```
+
+
+
+
+
+### ***Reference Materials***
+
+* [Machine Learning Foundations: Ep #1 - What is ML?](https://www.youtube.com/watch?v=_Z9TRANg4c0&lc=UgyZovmGs5ZzU-9g2RN4AaABAg.98TaXjZj0VH98UAi73GE_g)
+
+* Deep Learning with R by Francois Chollet and J.J.Allaire
