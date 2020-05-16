@@ -9,6 +9,8 @@ In the first YouTube session, [Episode 1](https://www.youtube.com/watch?v=_Z9TRA
 ## An R version
 
 
-**This [R Notebook](https://r-icntay.github.io/Episode_1-Machine-Learning-Foundations-What_is_ML/)** at its core tries to replicate the  [Python notebook](https://colab.research.google.com/github/lmoroney/mlday-tokyo/blob/master/Lab1-Hello-ML-World.ipynb#scrollTo=btF2CSFH2iEX) used for this episode.
+**This [R Notebook](https://r-icntay.github.io/Episode_1-Machine-Learning-Foundations-What_is_ML/)** at its core is meant to get you up to speed with building Neural Networks using TensorFlow.
+ 
 
+The Python Notebook used for this session can be found [here](https://colab.research.google.com/github/lmoroney/mlday-tokyo/blob/master/Lab1-Hello-ML-World.ipynb#scrollTo=btF2CSFH2iEX) 
 
